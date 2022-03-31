@@ -7,7 +7,7 @@ function MealItemForm(properties) {
       <Input
         label="Amount"
         input={{
-          id: "amount",
+          id: "amount_" + properties.id,
           type: "number",
           min: "1",
           max: "5",
