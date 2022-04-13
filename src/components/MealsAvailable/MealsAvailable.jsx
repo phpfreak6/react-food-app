@@ -1,36 +1,35 @@
+import { useEffect, useState } from "react";
 import Card from "../UI/Card/Card";
 import MealItem from "../MealItem/MealItem";
 import style from "./MealsAvailable.module.css";
 
-const DUMMY_MEALS = [
-  {
-    id: "m1",
-    name: "Sushi",
-    description: "Finest fish and veggies",
-    price: 22.99,
-  },
-  {
-    id: "m2",
-    name: "Schnitzel",
-    description: "A german specialty!",
-    price: 16.5,
-  },
-  {
-    id: "m3",
-    name: "Barbecue Burger",
-    description: "American, raw, meaty",
-    price: 12.99,
-  },
-  {
-    id: "m4",
-    name: "Green Bowl",
-    description: "Healthy...and green...",
-    price: 18.99,
-  },
-];
-
 function MealsAvailable() {
-  const mealsListArr = DUMMY_MEALS.map((meal) => (
+  const [meals, setMeals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [httpError, setHttpError] = useState();
+
+  useEffect(() => {
+    async function fetchMeals() {
+      const response = await fetch("http://slack.test/api/meals");
+      if (!response.ok) {
+        throw new Error("Something went wrong");
+      }
+      const json_response = await response.json();
+      setMeals(json_response);
+      setIsLoading(false);
+    }
+    try {
+      fetchMeals().catch((error) => {
+        setIsLoading(false);
+        setHttpError(error.message);
+      });
+    } catch (error) {
+      setIsLoading(false);
+      setHttpError(error.message);
+    }
+  }, []);
+
+  const mealsListArr = meals.map((meal) => (
     <MealItem
       key={meal.id}
       id={meal.id}
@@ -39,6 +38,23 @@ function MealsAvailable() {
       price={meal.price}
     />
   ));
+
+  if (isLoading) {
+    return (
+      <section className={style.MealsLoading}>
+        <p>LOADING...</p>
+      </section>
+    );
+  }
+
+  if (httpError) {
+    return (
+      <section className={style.MealsError}>
+        <p>{httpError}</p>
+      </section>
+    );
+  }
+
   return (
     <section className={style.meals}>
       <Card>
